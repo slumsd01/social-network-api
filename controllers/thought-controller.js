@@ -89,7 +89,40 @@ const thoughtController = {
             res.json(dbThoughtData)
         })
         .catch(err => res.json(err))
+    },    
+    
+    // POST to create a reaction stored in a single thought's reactions array field
+    createReaction({params, body}, res) {
+        Thought.findOneAndUpdate(
+            {_id: params.thoughtId},
+            {$addToSet: {reactions: body}},
+            {new: true}
+        )
+        .then(dbThoughtData => {
+            // send 404 if no thought is found
+            if (!dbThoughtData) {
+                res.status(404).json({message: 'No thought found with this id.'})
+                return;
+            }
+            res.json(dbThoughtData)
+        })
+        .catch(err => {
+            console.log(err)
+            res.staus(400).json(err)
+        })
+    },
+
+    // DELETE to pull and remove a reaction by the reaction's reactionId value
+    deleteReaction({params}, res) {
+        Thought.findOneAndUpdate(
+            {_id: params.thoughtId},
+            {$pull: {reactions: {reactionId: params.reactionId}}},
+            {new: true}
+        )
+        .then(dbUserData => res.json(dbUserData))
+        .catch(err => res.json(err)) 
     }
 }
+
 
 module.exports = thoughtController;
